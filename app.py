@@ -1,5 +1,6 @@
 import base64
 import binascii
+import hashlib
 import os
 import re
 import uuid
@@ -96,8 +97,8 @@ UI_HTML = """
           <input id="voice-file" type="file" accept="audio/*" required>
           <label for="first-name">Employee first name</label>
           <input id="first-name" placeholder="e.g. Ananya" required>
-          <label>Message the agent will speak</label>
-          <p class="hint">Hello {{first_name}}, I would like to personally thank you for your contribution to our organization.</p>
+          <label for="message">Message the agent will speak</label>
+          <textarea id="message" required>Hello {{first_name}}, I would like to personally thank you for your contribution to our organization.</textarea>
           <label for="message-language">Message language</label>
           <select id="message-language">
             <option value="en-IN">English (India)</option>
@@ -126,6 +127,7 @@ UI_HTML = """
       body.append("file", $("voice-file").files[0]);
       body.append("language", $("voice-language").value);
       body.append("first_name", $("first-name").value);
+      body.append("message", $("message").value);
       body.append("language_code", $("message-language").value);
       try {
         const response = await fetch("/generate", { method: "POST", body });
@@ -208,11 +210,12 @@ def save_message_audio(audio: bytes, employee_name: str) -> Path:
     return output_path
 
 
-def message_cache_path(employee_name: str) -> str:
+def message_cache_path(employee_name: str, message: str) -> str:
     safe_name = re.sub(
         r"[^a-zA-Z0-9_-]+", "-", employee_name.strip()
     ).strip("-_").lower()
-    return f"{safe_name or 'employee'}.mp3"
+    message_hash = hashlib.sha256(message.encode("utf-8")).hexdigest()[:12]
+    return f"{safe_name or 'employee'}-{message_hash}.mp3"
 
 
 def supabase_headers() -> dict[str, str]:
@@ -224,11 +227,11 @@ def supabase_headers() -> dict[str, str]:
     }
 
 
-def get_cached_audio(employee_name: str) -> bytes | None:
+def get_cached_audio(employee_name: str, message: str) -> bytes | None:
     headers = supabase_headers()
     if not headers:
         return None
-    object_path = quote(message_cache_path(employee_name), safe="")
+    object_path = quote(message_cache_path(employee_name, message), safe="")
     response = requests.get(
         f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BUCKET}/{object_path}",
         headers=headers,
@@ -257,11 +260,11 @@ def get_cached_audio(employee_name: str) -> bytes | None:
     return response.content
 
 
-def cache_audio(employee_name: str, audio: bytes) -> None:
+def cache_audio(employee_name: str, message: str, audio: bytes) -> None:
     headers = supabase_headers()
     if not headers:
         return
-    object_path = quote(message_cache_path(employee_name), safe="")
+    object_path = quote(message_cache_path(employee_name, message), safe="")
     upload_headers = {
         **headers,
         "Content-Type": "audio/mpeg",
@@ -296,14 +299,18 @@ def health() -> HealthResponse:
 async def generate_personalized_audio(
     file: Annotated[UploadFile, File(description="A clear 10–15 second CEO recording.")],
     first_name: Annotated[str, Form(min_length=1, max_length=100)],
+    message: Annotated[str, Form(min_length=1, max_length=2000)],
     language: Annotated[str, Form()] = DEFAULT_LANGUAGE_CODE,
     language_code: Annotated[str, Form()] = DEFAULT_LANGUAGE_CODE,
     x_sarvam_api_key: Annotated[str | None, Header()] = None,
 ) -> Response:
     first_name = first_name.strip()
-    personalized_message = FIXED_MESSAGE.replace("{{first_name}}", first_name)
+    message = message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Message must not be empty.")
+    personalized_message = message.replace("{{first_name}}", first_name)
     try:
-        cached_audio = get_cached_audio(first_name)
+        cached_audio = get_cached_audio(first_name, message)
     except (requests.RequestException, RuntimeError) as error:
         raise HTTPException(status_code=502, detail=str(error)) from error
     if cached_audio is not None:
@@ -374,7 +381,7 @@ async def generate_personalized_audio(
         raise HTTPException(status_code=502, detail="Sarvam returned an empty audio response.")
     try:
         save_message_audio(audio, first_name)
-        cache_audio(first_name, audio)
+        cache_audio(first_name, message, audio)
     except (OSError, requests.RequestException, RuntimeError) as error:
         raise HTTPException(
             status_code=500,

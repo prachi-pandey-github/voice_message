@@ -319,8 +319,12 @@ def main() -> None:
     editor_col, preview_col = st.columns([1.05, 0.95], gap="large")
     with editor_col:
         st.subheader("Message the agent should speak")
-        template = DEFAULT_MESSAGE
-        st.info(template)
+        template = st.text_area(
+            "Message template",
+            key="message_template",
+            height=160,
+            help="Use {{first_name}} where the employee's first name should be inserted.",
+        ).strip()
         st.caption(f"{len(template)} characters · Generated using the cloned CEO voice")
 
     with preview_col:
