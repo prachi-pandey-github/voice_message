@@ -11,7 +11,8 @@ from urllib.parse import quote
 import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 
@@ -36,6 +37,11 @@ app = FastAPI(
     title="Echo Voice API",
     description="Create personalized CEO voice messages with Sarvam AI Instant Voice Cloning.",
     version="1.0.0",
+)
+app.mount(
+    "/assets",
+    StaticFiles(directory=Path(__file__).with_name("frontend")),
+    name="frontend-assets",
 )
 
 UI_HTML = """
@@ -171,8 +177,8 @@ class ErrorResponse(BaseModel):
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def user_interface() -> HTMLResponse:
-    return HTMLResponse(content=UI_HTML)
+def user_interface() -> FileResponse:
+    return FileResponse(Path(__file__).with_name("frontend") / "index.html")
 
 
 def sarvam_api_key(request_key: str | None) -> str:

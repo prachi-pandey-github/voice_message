@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101827" />
+    <title>Echo — Voice messages that feel personal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="page-glow page-glow-one"></div>
+    <div class="page-glow page-glow-two"></div>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Echo home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>echo<span class="brand-dot">.</span></span>
+      </a>
+      <span class="topbar-note"><span class="status-dot"></span> Powered by Sarvam AI</span>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow"><span class="eyebrow-line"></span> PERSONALIZED VOICE, AT SCALE</p>
+        <h1>Make every message<br /><em>sound personal.</em></h1>
+        <p class="hero-copy">Create warm, memorable audio messages in your CEO's voice — personalized for every person on your list.</p>
+        <div class="hero-proof">
+          <span class="avatar-stack" aria-hidden="true"><b>AK</b><b>RM</b><b>PS</b></span>
+          <span>Trusted by teams that put people first</span>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Create a personalized voice message">
+        <div class="panel form-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="step-label">01 <span>—</span> SET UP YOUR MESSAGE</p>
+              <h2>Bring your message to life</h2>
+            </div>
+            <span class="secure-label">Private &amp; secure <span>✦</span></span>
+          </div>
+          <form id="generate-form">
+            <div class="field-grid">
+              <div class="field">
+                <label for="first-name">Recipient's first name</label>
+                <input id="first-name" maxlength="100" placeholder="e.g. Ananya" required />
+              </div>
+              <div class="field">
+                <label for="message-language">Output language</label>
+                <select id="message-language">
+                  <option value="en-IN">English (India)</option>
+                  <option value="hi-IN">Hindi</option>
+                  <option value="mr-IN">Marathi</option>
+                  <option value="ta-IN">Tamil</option>
+                  <option value="te-IN">Telugu</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="message">Your message <span class="label-hint">Use {{first_name}} to personalize</span></label>
+              <textarea id="message" maxlength="2000" required>Hello {{first_name}}, I would like to personally thank you for your contribution to our organization.</textarea>
+              <span class="character-count" id="character-count">0 / 2,000</span>
+            </div>
+            <div class="field">
+              <label for="voice-file">Reference voice <span class="label-hint">10–15 sec is ideal</span></label>
+              <label class="upload-zone" id="upload-zone" for="voice-file">
+                <span class="upload-icon" aria-hidden="true">↑</span>
+                <span class="upload-copy"><strong id="file-name">Drop an audio file here</strong><small>or click to browse · MP3, WAV, M4A, OGG</small></span>
+                <input id="voice-file" type="file" accept="audio/*" required />
+              </label>
+            </div>
+            <div class="field compact-field">
+              <label for="voice-language">Reference language</label>
+              <select id="voice-language">
+                <option value="en-IN">English (India)</option>
+                <option value="hi-IN">Hindi</option>
+                <option value="mr-IN">Marathi</option>
+                <option value="ta-IN">Tamil</option>
+                <option value="te-IN">Telugu</option>
+              </select>
+            </div>
+            <button class="primary-button" id="generate-button" type="submit">
+              <span>Generate voice message</span><span class="button-arrow">↗</span>
+            </button>
+            <p class="consent">Only upload a voice recording you have permission to clone.</p>
+          </form>
+        </div>
+
+        <div class="panel result-panel" aria-live="polite">
+          <div class="panel-heading result-heading">
+            <div>
+              <p class="step-label">02 <span>—</span> YOUR RESULT</p>
+              <h2>Listen &amp; share</h2>
+            </div>
+            <span class="result-pill" id="result-pill">Waiting for you</span>
+          </div>
+          <div class="result-body" id="result-body">
+            <div class="empty-art" aria-hidden="true"><span class="sound-wave wave-one"></span><span class="sound-wave wave-two"></span><span class="sound-wave wave-three"></span><span class="play-orb">▶</span></div>
+            <h3>Your message will appear here</h3>
+            <p>Fill in the details and generate a voice message that feels like it was made just for them.</p>
+          </div>
+          <div class="loading-state" id="loading-state" hidden>
+            <div class="loader-orb"><span></span><span></span><span></span></div>
+            <p class="loading-kicker">ECHO IS THINKING</p>
+            <h3 id="loading-text">Warming up the studio...</h3>
+            <div class="loading-progress"><span></span></div>
+            <p class="loading-subtext">This usually takes less than a minute</p>
+          </div>
+          <div class="status" id="message-status" role="alert"></div>
+          <div class="audio-result" id="audio-result"></div>
+        </div>
+      </section>
+      <footer><span>© 2024 Echo</span><span>Made for meaningful moments <span class="footer-star">✦</span></span></footer>
+    </main>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
